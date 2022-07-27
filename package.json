@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "node-sass": "^7.0.1",
+    "vuetify": "^2.3.10"
+  }
+}
