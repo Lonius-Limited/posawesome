@@ -758,6 +758,7 @@ export default {
         callback: function (r) {
           if (r.message) {
             vm.load_print_page();
+            vm.execute_pos_print();
             evntBus.$emit('set_last_invoice', vm.invoice_doc.name);
             evntBus.$emit('show_mesage', {
               text: `Invoice ${r.message.name} is Submited`,
@@ -789,6 +790,31 @@ export default {
       this.invoice_doc.payments.forEach((payment) => {
         payment.amount = 0;
       });
+    },
+    execute_pos_print() {
+      // var send2bridge = function (frm, print_format, print_type) {
+      // initialice the web socket for the bridge
+      let print_format = this.pos_profile.print_format;
+      let printService = new frappe.silent_print.WebSocketPrinter();
+      frappe.call({
+        method: 'silent_print.utils.print_format.create_pdf',
+        args: {
+          doctype: "Sales Invoice",
+          name: this.invoice_doc.name,
+          silent_print_format: print_format,
+          no_letterhead: 1,
+          _lang: "es"
+        },
+        callback: (r) => {
+          printService.submit({
+            'type': "INVOICE", //this is the label that identifies the printer in WHB's configuration
+            'url': 'file.pdf',
+            'file_content': r.message.pdf_base64
+          });
+        }
+      })
+      //}
+      console.log(this.invoice_doc.name, "is what I am printing using ", print_format)
     },
     load_print_page() {
       const print_format =
