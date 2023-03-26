@@ -485,7 +485,7 @@ export default {
         args: { sales_invoice: this.invoice_doc.name }
       }).then(r => {
         let d = new frappe.ui.Dialog({
-          title: 'Send SMS (optional)',
+          title: 'Send SMS Receipt (optional)',
           fields: [
             {
               label: 'Mobile Number',
