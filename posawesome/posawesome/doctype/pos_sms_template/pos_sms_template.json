@@ -1,0 +1,49 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-03-26 11:28:12.910289",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "html_1",
+  "sms_template"
+ ],
+ "fields": [
+  {
+   "fieldname": "sms_template",
+   "fieldtype": "Text",
+   "in_list_view": 1,
+   "label": "SMS Template",
+   "reqd": 1
+  },
+  {
+   "fieldname": "html_1",
+   "fieldtype": "HTML",
+   "options": "<div class=\"alert alert-primary\" role=\"alert\">\n   Type a template using Jinja style. \n</div>"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2023-03-26 11:40:29.987041",
+ "modified_by": "Administrator",
+ "module": "POSAwesome",
+ "name": "POS SMS Template",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
