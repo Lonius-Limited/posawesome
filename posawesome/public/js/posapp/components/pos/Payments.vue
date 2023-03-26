@@ -461,24 +461,24 @@ export default {
         payment.amount = 0;
       });
     },
-    send_sms(vals) {
-      var number = vals.mobile_number;
-      var message = vals.sms_message;
-      frappe.call({
-        method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
-        args: {
-          receiver_list: [number],
-          msg: message
-        },
-        callback: function (r) {
-          if (r.exc) {
-            frappe.msgprint(r.exc);
-          } else {
-            console.log("Status: " + r)
-          }
-        }
-      });
-    },
+    // send_sms(vals) {
+    //   var number = vals.mobile_number;
+    //   var message = vals.sms_message;
+    //   frappe.call({
+    //     method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
+    //     args: {
+    //       receiver_list: [number],
+    //       msg: message
+    //     },
+    //     callback: function (r) {
+    //       if (r.exc) {
+    //         frappe.msgprint(r.exc);
+    //       } else {
+    //         console.log("Status: " + r)
+    //       }
+    //     }
+    //   });
+    // },
     execute_email_dialog() {
       frappe.call({
         method: "posawesome.posawesome.doctype.pos_sms_template.pos_sms_template.get_pos_sms",
@@ -510,6 +510,7 @@ export default {
             // console.log(values);
             var number = vals.mobile_number;
             var message = vals.sms_message;
+            if (!number || number===undefined || number===null) return
             frappe.call({
               method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
               args: {
