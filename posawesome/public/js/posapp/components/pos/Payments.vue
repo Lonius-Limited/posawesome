@@ -426,7 +426,7 @@ export default {
         async: true,
         callback: function (r) {
           if (r.message) {
-            // vm.load_print_page();
+            vm.load_print_page();
             // vm.execute_pos_print()
             evntBus.$emit('set_last_invoice', vm.invoice_doc.name);
             evntBus.$emit('show_mesage', {
@@ -435,7 +435,7 @@ export default {
             });
             frappe.utils.play_sound('submit');
             this.addresses = [];
-            vm.execute_email_dialog()
+            // vm.execute_email_dialog()
           }
         },
       });
