@@ -498,7 +498,7 @@ export default {
             {
               label: __("From"),
               fieldtype: "Select",
-              fieldname: "email_account",
+              fieldname: "sender",
               options: r.message.email_accounts,
               default: r.message.email_accounts[0],
               reqd: 1
