@@ -573,7 +573,7 @@ export default {
                 subject: values.subject,
                 doctype: invDoc.doctype,
                 name: invDoc.name,
-                send_email: 1,
+                send_email: 0,
                 print_format: values.select_print_format,
                 sender_full_name: frappe.user.full_name(),
                 _lang: invDoc.language || 'English'
