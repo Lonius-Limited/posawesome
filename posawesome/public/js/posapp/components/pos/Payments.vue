@@ -576,7 +576,6 @@ export default {
                 send_email: 1,
                 print_format: values.select_print_format,
                 sender: values.sender,
-                sender_full_name: frappe.user.full_name(),
                 _lang: invDoc.language || 'English'
               },
               callback: r => {
