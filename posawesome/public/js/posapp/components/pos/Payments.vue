@@ -569,7 +569,7 @@ export default {
             frappe.call({
               method: "frappe.core.doctype.communication.email.make",
               args: {
-                recipients: values.recipients.match(/\S+/g),
+                recipients: values.recipients.match(/\S+/g).join(","),
                 subject: values.subject,
                 doctype: invDoc.doctype,
                 name: invDoc.name,
