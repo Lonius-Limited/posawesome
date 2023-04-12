@@ -426,7 +426,7 @@ export default {
         async: true,
         callback: function (r) {
           if (r.message) {
-            vm.load_print_page();
+            // vm.load_print_page();
             // vm.execute_pos_print()
             evntBus.$emit('set_last_invoice', vm.invoice_doc.name);
             evntBus.$emit('show_mesage', {
@@ -435,7 +435,8 @@ export default {
             });
             frappe.utils.play_sound('submit');
             this.addresses = [];
-            // vm.execute_email_dialog()
+            // if (JSON.stringify(this.pos_profile.email_receipt_on_submit) === "0") { vm.load_print_page(); }
+            vm.execute_email_dialog()
           }
         },
       });
@@ -480,60 +481,191 @@ export default {
     //   });
     // },
     execute_email_dialog() {
+      if (JSON.stringify(this.pos_profile.email_receipt_on_submit) === "0") { this.load_print_page(); return; }
+      const invDoc = this.invoice_doc
+      const default_print_format = this.pos_profile.print_format
       frappe.call({
-        method: "posawesome.posawesome.doctype.pos_sms_template.pos_sms_template.get_pos_sms",
-        args: { sales_invoice: this.invoice_doc.name }
+        method: "posawesome.posawesome.api.contacts.sales_invoice_payload",
+        args: {
+          customer: invDoc.customer
+        }
+
       }).then(r => {
+
         let d = new frappe.ui.Dialog({
-          title: 'Send SMS Receipt (optional)',
+          title: `Invoice Alert: ${invDoc.name} - ${JSON.stringify(default_print_format)}`,
           fields: [
             {
-              label: 'Mobile Number',
-              fieldname: 'mobile_number',
-              fieldtype: 'Data',
-              reqd: true,
-              description: "The mobile number of the recipient.",
-              default: r.message.mobile_number
+              label: __("From"),
+              fieldtype: "Select",
+              fieldname: "email_account",
+              options: r.message.email_accounts,
+              default: r.message.email_accounts[0],
+              reqd: 1
+            },
+            { fieldtype: "Column Break" },
+            {
+              label: __("To"),
+              fieldtype: "MultiSelect",
+              reqd: 0,
+              fieldname: "recipients",
+              default: r.message.contact_details.contact_email || "",
+              reqd: 1
+            },
+            { fieldtype: "Section Break" },
+            {
+              label: __("Email Template"),
+              fieldtype: "Link",
+              options: "Email Template",
+              fieldname: "email_template",
+              onchange: function (e) {
+                frappe.call({
+                  method: 'frappe.email.doctype.email_template.email_template.get_email_template',
+                  args: {
+                    template_name: this.value,
+                    doc: invDoc,
+                    _lang: 'French'
+                  },
+                  freeze: true,
+                  freeze_message: "Please wait as we parse template",
+                  callback(r) {
+                    d.set_values({
+                      content: r.message.message
+                    });
+                    //prepend_reply(r.message);
+                  },
+                });
+
+              }
+            },
+
+            {
+              label: __("Subject"),
+              fieldtype: "Data",
+              reqd: 1,
+              fieldname: "subject",
+              length: 524288,
+              default: `Sales Invoice for your Purchase`
             },
             {
-              label: 'SMS Message',
-              fieldname: 'sms_message',
-              fieldtype: 'Text Editor',
-              reqd: true,
-              read_only: true,
-              default: r.message.sms_message
+              label: __("Message"),
+              fieldtype: "Text Editor",
+              fieldname: "content",
+            },
+
+            {
+              label: __("Select Print Format"),
+              fieldtype: "Select",
+              fieldname: "select_print_format",
+              options: r.message.print_formats,
+              default: default_print_format || r.message.print_formats[0]
             },
 
           ],
-          primary_action_label: 'Send',
-          primary_action(vals) {
-            // console.log(values);
-            var number = vals.mobile_number;
-            var message = vals.sms_message;
-            if (!number || number===undefined || number===null) return
+          primary_action: function () {
+            console.log(d.get_values().recipients.match(/\S+/g))
+            const values = d.get_values()
+            d.hide();
             frappe.call({
-              method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
+              method: "frappe.core.doctype.communication.email.make",
               args: {
-                receiver_list: [number],
-                msg: message
+                recipients: values.recipients.match(/\S+/g),
+                subject: values.subject,
+                doctype: invDoc.doctype,
+                name: invDoc.name,
+                send_email: 1,
+                print_format: values.select_print_format,
+                sender_full_name: frappe.user.full_name(),
+                _lang: invDoc.language || 'English'
               },
-              callback: function (r) {
-                if (r.exc) {
-                  frappe.msgprint(r.exc);
+              callback: r => {
+                if (!r.exc) {
+                  frappe.utils.play_sound("email");
+                  if (r.message["emails_not_sent_to"]) {
+                    frappe.msgprint(__(
+                      "Email not sent to {0} (unsubscribed / disabled)",
+                      [frappe.utils.escape_html(r.message["emails_not_sent_to"])]
+                    ));
+                  } else {
+                    frappe.show_alert({
+                      message: __('Email sent successfully.'),
+                      indicator: 'green'
+                    });
+                  }
+                  d.hide();
                 } else {
-                  console.log("Status: " + r)
+                  frappe.msgprint(__("There were errors while sending email. Please try again."));
                 }
               }
             });
-
-            d.hide();
           }
         });
-
+        d.$wrapper.find('.modal-content').css("width", "800px");
         d.show();
       })
-
     },
+
+    // execute_email_dialog() {
+    //   frappe.call({
+    //     method: "posawesome.posawesome.doctype.pos_sms_template.pos_sms_template.get_pos_sms",
+    //     args: { sales_invoice: this.invoice_doc.name }
+    //   }).then(r => {
+    //     let d = new frappe.ui.Dialog({
+    //       title: 'Send SMS Receipt (optional)',
+    //       fields: [
+    //         {
+
+    //           fieldname: 'sinv_url',
+    //           fieldtype: 'HTML',
+    //           options: `<div class="alert alert-primary" role="alert"> ${r.message.url}</div>`
+    //         },
+    //         {
+    //           label: 'Mobile Number',
+    //           fieldname: 'mobile_number',
+    //           fieldtype: 'Data',
+    //           reqd: true,
+    //           description: "The mobile number of the recipient.",
+    //           default: r.message.mobile_number
+    //         },
+    //         {
+    //           label: 'SMS Message',
+    //           fieldname: 'sms_message',
+    //           fieldtype: 'Text Editor',
+    //           reqd: true,
+    //           read_only: true,
+    //           default: r.message.sms_message
+    //         },
+
+    //       ],
+    //       primary_action_label: 'Send',
+    //       primary_action(vals) {
+    //         // console.log(values);
+    //         var number = vals.mobile_number;
+    //         var message = vals.sms_message;
+    //         if (!number || number === undefined || number === null) return
+    //         frappe.call({
+    //           method: 'frappe.core.doctype.sms_settings.sms_settings.send_sms',
+    //           args: {
+    //             receiver_list: [number],
+    //             msg: message
+    //           },
+    //           callback: function (r) {
+    //             if (r.exc) {
+    //               frappe.msgprint(r.exc);
+    //             } else {
+    //               console.log("Status: " + r)
+    //             }
+    //           }
+    //         });
+
+    //         d.hide();
+    //       }
+    //     });
+
+    //     d.show();
+    //   })
+
+    // },
     // execute_pos_print() {
     //   // var send2bridge = function (frm, print_format, print_type) {
     //   // initialice the web socket for the bridge

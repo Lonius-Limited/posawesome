@@ -24,8 +24,10 @@ def get_pos_sms(sales_invoice):
 	invoice_amount = frappe.format(inv_data.get("grand_total"),{"fieldtype":"Currency"})
 	date_time = inv_data.get("creation")
 	formatted_date_time = date_time.strftime("%d %b %Y at %I:%M %p")
-	url = "{}/sales_invoice_receipt/{}".format(frappe.utils.get_url(),invoice)
-	anchor = "<a href={}>Invoice</a>".format(url)
-	return dict(mobile_number=mobile,sms_message=sms_template.format(
+	# url = "{}/sales_invoice_receipt/{}".format(frappe.utils.get_url(),invoice)
+	# anchor = "<a href={}>Invoice</a>".format(url)
+	default_url = frappe.utils.get_link_to_form('Sales Invoice', sales_invoice, label='Click Me to open the invoice')
+	url = default_url.replace("<a","<a target='_blank'")
+	return dict(url=url,mobile_number=mobile,sms_message=sms_template.format(
 		invoice,invoice_amount,formatted_date_time,url
 	))
