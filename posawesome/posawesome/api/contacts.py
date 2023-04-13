@@ -22,7 +22,7 @@ def send_invoice_alert(**args):
 	frappe.enqueue(
 		method=frappe.sendmail,
 		now=True,
-		sender=args.get("sender")
+		sender=args.get("sender"),
 		reference_doctype=args.get("doctype"),
 		reference_name=args.get("name"),
 		recipients=recipient_emails,
