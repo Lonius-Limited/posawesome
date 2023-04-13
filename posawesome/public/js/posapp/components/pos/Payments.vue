@@ -567,14 +567,16 @@ export default {
             const values = d.get_values()
             d.hide();
             frappe.call({
-              method: "frappe.core.doctype.communication.email.make",
+              // method: "frappe.core.doctype.communication.email.make",
+              method: "posawesome.posawesome.api.contacts.send_invoice_alert",
               args: {
-                recipients: values.recipients.match(/\S+/g).join(","),
+                recipients: values.recipients.match(/[^,]+/g).join(","),
                 subject: values.subject,
                 doctype: invDoc.doctype,
                 name: invDoc.name,
                 send_email: 1,
                 print_format: values.select_print_format,
+                content: values.content,
                 sender: values.sender,
                 _lang: invDoc.language || 'English'
               },
