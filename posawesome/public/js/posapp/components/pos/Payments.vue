@@ -493,7 +493,7 @@ export default {
       }).then(r => {
 
         let d = new frappe.ui.Dialog({
-          title: `Invoice Alert: ${invDoc.name} - ${JSON.stringify(default_print_format)}`,
+          title: `Invoice Alert: ${invDoc.name}`,
           fields: [
             {
               label: __("From"),
@@ -524,7 +524,7 @@ export default {
                   args: {
                     template_name: this.value,
                     doc: invDoc,
-                    _lang: 'French'
+                    _lang: invDoc.language || 'en-US'
                   },
                   freeze: true,
                   freeze_message: "Please wait as we parse template",
@@ -578,7 +578,7 @@ export default {
                 print_format: values.select_print_format,
                 content: values.content,
                 sender: values.sender,
-                _lang: invDoc.language || 'English'
+                _lang: invDoc.language || 'en-US'
               },
               callback: r => {
                 if (!r.exc) {
